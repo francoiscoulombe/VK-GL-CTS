@@ -350,7 +350,8 @@ tcu::Vec4 getMiddleValue(VkFormat imageFormat)
 }
 
 tcu::TextureLevel generateReferenceImage(const tcu::IVec3 &imageSize, const VkFormat imageFormat,
-                                         const VkFormat readFormat, bool constantValue = false)
+                                         const VkFormat readFormat, bool constantValue = false,
+                                         bool storeOnly = false)
 {
     // Generate a reference image data using the storage format
 
@@ -360,7 +361,11 @@ tcu::TextureLevel generateReferenceImage(const tcu::IVec3 &imageSize, const VkFo
     const float storeColorScale = computeStoreColorScale(imageFormat, imageSize);
     const float storeColorBias  = computeStoreColorBias(imageFormat);
 
-    const bool srgbFormat          = isSrgbFormat(imageFormat);
+    // Per Vulkan spec Section 16.3 "Texel Output Operations", imageStore does NOT
+    // apply linear-to-sRGB conversion. For store-only tests, the reference must use
+    // the raw linear values. For load_store tests (round-trip), the existing behavior
+    // is preserved since both imageLoad and imageStore may interact with sRGB.
+    const bool applySrgbConversion = isSrgbFormat(imageFormat) && !storeOnly;
     const bool intFormat           = isIntegerFormat(imageFormat);
     const bool storeNegativeValues = isSignedFormat(imageFormat) && (storeColorBias == 0);
     const int xMax                 = imageSize.x() - 1;
@@ -386,7 +391,7 @@ tcu::TextureLevel generateReferenceImage(const tcu::IVec3 &imageSize, const VkFo
                         access.setPixel(color, x, y, z);
                     else
                     {
-                        if (srgbFormat)
+                        if (applySrgbConversion)
                             access.setPixel(tcu::linearToSRGB(color.asFloat() * storeColorScale + storeColorBias), x, y,
                                             z);
                         else
@@ -969,7 +974,8 @@ tcu::TestStatus StoreTestInstance::verifyResult(void)
     const VkDevice device     = m_context.getDevice();
 
     const tcu::IVec3 imageSize        = m_texture.size();
-    const tcu::TextureLevel reference = generateReferenceImage(imageSize, m_format, m_storeConstantValue);
+    const tcu::TextureLevel reference = generateReferenceImage(imageSize, m_format, m_format, m_storeConstantValue,
+                                                               /*storeOnly=*/true);
 
     const Allocation &alloc = m_imageBuffer->getAllocation();
     invalidateAlloc(vk, device, alloc);
