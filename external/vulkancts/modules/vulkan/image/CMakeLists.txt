@@ -64,6 +64,8 @@ set(DEQP_VK_VKSC_IMAGE_SRCS
 	vktImage2dArrayCompatibleTests.hpp
 	vktImageGeneralLayoutTests.cpp
 	vktImageGeneralLayoutTests.hpp
+	vktImageSrgbStorageTests.cpp
+	vktImageSrgbStorageTests.hpp
 	)
 
 set(DEQP_VK_IMAGE_SRCS

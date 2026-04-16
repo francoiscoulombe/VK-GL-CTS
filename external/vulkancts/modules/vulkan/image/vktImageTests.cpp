@@ -40,6 +40,7 @@
 #include "vktImageDepthStencilDescriptorTests.hpp"
 #include "vktImageSampleCompressedTextureTests.hpp"
 #include "vktImageExtendedUsageBitTests.hpp"
+#include "vktImageSrgbStorageTests.hpp"
 #include "vktImageTransfer.hpp"
 #include "vktImageDepthStencilSeparateTests.hpp"
 #include "vktImageNonUniformOffsetSampleTests.hpp"
@@ -97,6 +98,7 @@ void createChildren(tcu::TestCaseGroup *imageTests)
     imageTests->addChild(createImageDeviceScopeAccessTests(testCtx));
     imageTests->addChild(createImage2dArrayCompatibleTests(testCtx));
     imageTests->addChild(createImageGeneralLayoutTests(testCtx));
+    imageTests->addChild(createImageSrgbStorageTests(testCtx));
 }
 
 } // namespace
